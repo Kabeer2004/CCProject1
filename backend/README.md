@@ -99,8 +99,8 @@ erDiagram
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/student-management-api.git
-   cd student-management-api/backend/student-management
+   git clone https://github.com/Kabeer2004/CCProject1.git
+   cd backend/student-management-api/backend/student-management
    ```
 
 2. Create and activate virtual environment:
