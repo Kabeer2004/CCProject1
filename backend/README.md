@@ -2,7 +2,7 @@
 
 ![FastAPI](https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png)
 
-A secure RESTful API for student management with JWT authentication, built with FastAPI and SQLite.
+A secure RESTful API for student and course management with JWT authentication, built with FastAPI and SQLite.
 
 ## Features
 
@@ -20,7 +20,7 @@ Insertion of Students by Authenticated User
 ### 🔒 Authentication & Authorization
 
 - JWT-based authentication (OAuth2 with password flow)
-- Protected endpoints for all student operations
+- Protected endpoints for all student and course operations
 - Role-based access control (future-ready)
 - Password hashing with bcrypt
 
@@ -33,7 +33,8 @@ Insertion of Students by Authenticated User
 
 ### 📊 API Features
 
-- Full CRUD operations for student management
+- Full CRUD operations for student and course management
+- Enrollment management for students in courses
 - Request validation with Pydantic models
 - Proper HTTP status codes for all responses
 - Pagination support for student listings
@@ -59,20 +60,27 @@ Insertion of Students by Authenticated User
 
 ## API Endpoints
 
-| Endpoint         | Method | Auth Required | Description         |
-| ---------------- | ------ | ------------- | ------------------- |
-| `/token`         | POST   | No            | Get access token    |
-| `/users/`        | POST   | No            | Create new user     |
-| `/students/`     | POST   | Yes           | Create new student  |
-| `/students/`     | GET    | Yes           | List all students   |
-| `/students/{id}` | GET    | Yes           | Get student details |
-| `/health`        | GET    | No            | Health check        |
+| Endpoint                          | Method | Auth Required | Description                    |
+| --------------------------------- | ------ | ------------- | ------------------------------ |
+| `/token`                          | POST   | No            | Get access token               |
+| `/users/`                         | POST   | No            | Create new user                |
+| `/students/`                      | POST   | Yes           | Create new student             |
+| `/students/`                      | GET    | Yes           | List all students              |
+| `/students/{id}`                  | GET    | Yes           | Get student details            |
+| `/courses/`                       | POST   | Yes           | Create new course              |
+| `/courses/{course_id}`            | GET    | Yes           | Get course details             |
+| `/enrollments`                    | POST   | Yes           | Enroll student in course       |
+| `/students/{student_id}/courses/` | GET    | Yes           | Get student's enrolled courses |
+| `/health`                         | GET    | No            | Health check                   |
 
 ## Database Schema
 
 ```mermaid
 erDiagram
     USER ||--o{ STUDENT : creates
+    USER ||--o{ COURSE : creates
+    STUDENT ||--o{ ENROLLMENT : enrolled_in
+    COURSE ||--o{ ENROLLMENT : includes
     USER {
         int id PK
         string username
@@ -84,6 +92,16 @@ erDiagram
         string name
         int age
         string email
+    }
+    COURSE {
+        int id PK
+        string title
+        string description
+    }
+    ENROLLMENT {
+        int id PK
+        int student_id FK
+        int course_id FK
     }
 ```
 
@@ -111,6 +129,7 @@ erDiagram
    ```
 
 3. Install dependencies:
+
    ```bash
    pip install -r requirements.txt
    ```
@@ -134,6 +153,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
    ```
 
 2. Initialize database (optional):
+
    ```bash
    python -c "from database import init_db; import asyncio; asyncio.run(init_db())"
    ```
@@ -188,6 +208,31 @@ curl -X POST "http://localhost:8000/students/" \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer YOUR_TOKEN" \
 -d '{"name": "John Doe", "age": 21, "email": "john@example.com"}'
+```
+
+### Create Course (Authenticated)
+
+```bash
+curl -X POST "http://localhost:8000/courses/" \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer YOUR_TOKEN" \
+-d '{"title": "Mathematics", "description": "Introduction to Mathematics"}'
+```
+
+### Enroll Student in Course (Authenticated)
+
+```bash
+curl -X POST "http://localhost:8000/enrollments" \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer YOUR_TOKEN" \
+-d '{"student_id": 1, "course_id": 1}'
+```
+
+### Get Student's Enrolled Courses (Authenticated)
+
+```bash
+curl -X GET "http://localhost:8000/students/1/courses/" \
+-H "Authorization: Bearer YOUR_TOKEN"
 ```
 
 ## Project Structure
