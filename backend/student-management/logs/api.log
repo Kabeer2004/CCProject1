@@ -1,0 +1,16 @@
+2025-03-26 02:58:29,864 - main - INFO - Request: POST http://localhost:8000/users/
+2025-03-26 02:58:29,869 - passlib.handlers.bcrypt - WARNING - (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "D:\Documents\pvg\practical\CC\CC Project 1\backend\student-management\venv\Lib\site-packages\passlib\handlers\bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2025-03-26 02:58:30,210 - main - INFO - Response: 200
+2025-03-26 02:59:16,904 - main - INFO - Request: POST http://localhost:8000/token
+2025-03-26 02:59:17,205 - main - INFO - Response: 200
+2025-03-26 03:00:40,323 - main - INFO - Request: POST http://localhost:8000/students/
+2025-03-26 03:00:40,324 - main - INFO - Response: 401
+2025-03-26 03:02:23,834 - main - INFO - Request: POST http://localhost:8000/students/
+2025-03-26 03:02:23,836 - main - INFO - Response: 401
+2025-03-26 03:03:24,695 - main - INFO - Request: POST http://localhost:8000/students/
+2025-03-26 03:03:24,853 - main - INFO - Response: 201

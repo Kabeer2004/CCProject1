@@ -1,126 +1,226 @@
-# Student Management System - FastAPI Backend
+# Student Management API - FastAPI Backend
 
-![FastAPI Logo](https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png) 
+![FastAPI](https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png)
 
-A RESTful API for managing student records built with FastAPI and SQLite. This backend provides endpoints for creating and retrieving student information with proper validation and error handling.
+A secure RESTful API for student management with JWT authentication, built with FastAPI and SQLite.
 
 ## Features
 
-### 📝 Core Functionalities
-- **Student creation** with auto-generated IDs
-- **Student retrieval** by ID
-- **List all students** in the system
-- **Data validation** for all inputs
-- **Duplicate email prevention**
+![Alembic Migrations](image.png)
+Alembic Migration
 
-### 🛡️ Data Integrity
-- **SQLite database** for persistent storage
-- **Automatic database initialization** on startup
-- **ORM-based operations** using SQLAlchemy
-- **Proper error handling** for various scenarios
+![Access Token Creation (JWT)](image-1.png)
+Access Token Creation (JWT)
+
+![Insertion of Students by Authenticated User](image-2.png)
+Insertion of Students by Authenticated User
+
+![The Student Management API](image-3.png)
+
+### 🔒 Authentication & Authorization
+
+- JWT-based authentication (OAuth2 with password flow)
+- Protected endpoints for all student operations
+- Role-based access control (future-ready)
+- Password hashing with bcrypt
+
+### 🗃️ Database
+
+- SQLite database with SQLAlchemy ORM
+- Async database operations
+- Alembic database migrations
+- Automatic database initialization
 
 ### 📊 API Features
-- **Standard REST endpoints** following best practices
-- **Request/response validation** with Pydantic models
-- **Interactive API documentation** (Swagger UI & ReDoc)
-- **Proper HTTP status codes** for all responses
+
+- Full CRUD operations for student management
+- Request validation with Pydantic models
+- Proper HTTP status codes for all responses
+- Pagination support for student listings
+- Comprehensive error handling
+
+### 🛠️ Development Tools
+
+- Unit tests with pytest
+- In-memory SQLite for testing
+- Request/response logging
+- Interactive API documentation (Swagger UI & ReDoc)
+- CORS middleware enabled
+
+## Tech Stack
+
+- **Framework**: FastAPI
+- **Database**: SQLite with SQLAlchemy ORM
+- **Authentication**: JWT (OAuth2)
+- **Testing**: pytest with FastAPI TestClient
+- **Migrations**: Alembic
+- **Logging**: Python logging module
+- **Validation**: Pydantic
 
 ## API Endpoints
 
-| Endpoint | Method | Description | Request Body | Response |
-|----------|--------|-------------|--------------|----------|
-| `/students/` | POST | Create a new student | `{"name": str, "age": int, "email": str}` | Created student data with ID |
-| `/students/{student_id}` | GET | Get a specific student | - | Student data |
-| `/students/` | GET | Get all students | - | List of all students |
+| Endpoint         | Method | Auth Required | Description         |
+| ---------------- | ------ | ------------- | ------------------- |
+| `/token`         | POST   | No            | Get access token    |
+| `/users/`        | POST   | No            | Create new user     |
+| `/students/`     | POST   | Yes           | Create new student  |
+| `/students/`     | GET    | Yes           | List all students   |
+| `/students/{id}` | GET    | Yes           | Get student details |
+| `/health`        | GET    | No            | Health check        |
 
-## Technologies Used
+## Database Schema
 
-- **FastAPI** - Modern, fast web framework for building APIs
-- **SQLite** - Lightweight database for storage
-- **SQLAlchemy** - Python SQL toolkit and ORM
-- **Pydantic** - Data validation and settings management
-- **Uvicorn** - ASGI server for running FastAPI
+```mermaid
+erDiagram
+    USER ||--o{ STUDENT : creates
+    USER {
+        int id PK
+        string username
+        string hashed_password
+        bool is_active
+    }
+    STUDENT {
+        int id PK
+        string name
+        int age
+        string email
+    }
+```
 
 ## Getting Started
 
 ### Prerequisites
-- Python 3.7+
+
+- Python 3.8+
 - pip package manager
 
 ### Installation
 
-1. Clone the repository
+1. Clone the repository:
+
    ```bash
    git clone https://github.com/your-username/student-management-api.git
-   cd student-management-api
+   cd student-management-api/backend/student-management
    ```
 
-2. Create and activate a virtual environment (recommended)
+2. Create and activate virtual environment:
+
    ```bash
    python -m venv venv
-   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
-3. Install dependencies
+3. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
 
-### Running the Server
+### Configuration
 
-1. Start the development server:
+Create a `.env` file:
+
+```env
+SECRET_KEY=your-secret-key-here
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+```
+
+### Database Setup
+
+1. Apply migrations:
+
    ```bash
-   uvicorn main:app --reload
+   alembic upgrade head
    ```
 
-2. The server will start at `http://127.0.0.1:8000`
+2. Initialize database (optional):
+   ```bash
+   python -c "from database import init_db; import asyncio; asyncio.run(init_db())"
+   ```
 
-3. Access the interactive documentation:
-   - Swagger UI: `http://127.0.0.1:8000/docs`
-   - ReDoc: `http://127.0.0.1:8000/redoc`
+### Running the Server
 
-## Database Initialization
+Start the development server:
 
-The SQLite database (`students.db`) is automatically created when you first run the application. The database file will be created in your project directory.
-
-## Example Requests
-
-### Create a new student
 ```bash
-curl -X POST "http://localhost:8000/students/" \
--H "Content-Type: application/json" \
--d '{"name": "John Doe", "age": 21, "email": "john.doe@example.com"}'
+uvicorn main:app --reload
 ```
 
-### Get a student by ID
-```bash
-curl "http://localhost:8000/students/1"
-```
-
-### Get all students
-```bash
-curl "http://localhost:8000/students/"
-```
-
-## Error Handling
-
-The API returns appropriate HTTP status codes with error details:
-- `400 Bad Request` - Invalid input data or duplicate email
-- `404 Not Found` - Requested student doesn't exist
-- `422 Unprocessable Entity` - Validation error
+The API will be available at `http://localhost:8000`
 
 ## Testing
 
-You can test the API using:
-1. The built-in interactive documentation (Swagger UI)
-2. Tools like Postman or Insomnia
-3. curl commands as shown above
+Run the test suite:
 
-## Future Enhancements
+```bash
+pytest
+```
 
-- Add authentication and authorization
-- Implement update and delete endpoints
-- Add pagination for student list
-- Include search/filter functionality
-- Add more student fields (e.g., enrollment date, courses)
-- Implement proper logging
+## API Documentation
+
+Interactive documentation is automatically available at:
+
+- Swagger UI: `http://localhost:8000/docs`
+- ReDoc: `http://localhost:8000/redoc`
+
+## Example Requests
+
+### Create User
+
+```bash
+curl -X POST "http://localhost:8000/users/" \
+-H "Content-Type: application/json" \
+-d '{"username": "admin", "password": "secret"}'
+```
+
+### Get Access Token
+
+```bash
+curl -X POST "http://localhost:8000/token" \
+-H "Content-Type: application/x-www-form-urlencoded" \
+-d "username=admin&password=secret"
+```
+
+### Create Student (Authenticated)
+
+```bash
+curl -X POST "http://localhost:8000/students/" \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer YOUR_TOKEN" \
+-d '{"name": "John Doe", "age": 21, "email": "john@example.com"}'
+```
+
+## Project Structure
+
+```
+student-management/
+├── alembic/               # Database migrations
+├── tests/                 # Unit tests
+├── .env.example           # Environment variables template
+├── alembic.ini            # Alembic configuration
+├── config.py              # Application configuration
+├── crud.py                # Database operations
+├── database.py            # Database connection
+├── logging_config.py      # Logging setup
+├── main.py                # FastAPI application
+├── models.py              # SQLAlchemy models
+├── requirements.txt       # Dependencies
+├── schemas.py             # Pydantic models
+└── students.db            # SQLite database
+```
+
+## Deployment
+
+For production deployment:
+
+1. Set up a proper database (PostgreSQL recommended)
+2. Configure proper secret keys
+3. Set up HTTPS
+4. Consider using:
+   - Gunicorn with Uvicorn workers
+   - NGINX as reverse proxy
+   - Docker for containerization
+
+---
+
+_Developed as part of the Cloud Computing course - 6th Semester Engineering_

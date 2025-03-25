@@ -1,22 +1,66 @@
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
+import os
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./students.db"
+# Database URLs
+ASYNC_SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///./students.db"
+SYNC_SQLALCHEMY_DATABASE_URL = "sqlite:///./students.db"
+TEST_SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+# Engines
+async_engine = create_async_engine(
+    ASYNC_SQLALCHEMY_DATABASE_URL,
+    connect_args={"check_same_thread": False}
 )
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+sync_engine = create_engine(
+    SYNC_SQLALCHEMY_DATABASE_URL,
+    connect_args={"check_same_thread": False}
+)
+
+test_engine = create_engine(
+    TEST_SQLALCHEMY_DATABASE_URL,
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool
+)
+
+# Session makers
+AsyncSessionLocal = sessionmaker(
+    bind=async_engine,
+    class_=AsyncSession,
+    expire_on_commit=False
+)
+
+SyncSessionLocal = sessionmaker(
+    bind=sync_engine,
+    autocommit=False,
+    autoflush=False
+)
+
+TestSessionLocal = sessionmaker(
+    bind=test_engine,
+    autocommit=False,
+    autoflush=False
+)
 
 Base = declarative_base()
 
-def get_db():
-    db = SessionLocal()
+async def get_db():
+    async with AsyncSessionLocal() as session:
+        yield session
+
+def get_sync_db():
+    db = SyncSessionLocal()
     try:
         yield db
     finally:
         db.close()
 
-def init_db():
-    Base.metadata.create_all(bind=engine)
+def get_test_db():
+    db = TestSessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
